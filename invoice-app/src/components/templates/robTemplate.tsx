@@ -161,7 +161,7 @@ export function RobTemplate({
             </div>
             <div className="gap-1 flex-col flex items-end text-left font-regular text-[10px]">
               <span>GST/HST #</span>
-              <span>763481421 RT0001</span>
+              {/* <span>763481421 RT0001</span> */}
             </div>
           </div>
         </div>
