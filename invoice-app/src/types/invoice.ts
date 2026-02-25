@@ -2,7 +2,6 @@ export interface InvoiceItem {
   serviceName: string;
   quantity?: number;
   rate: number;
-  hstRate?: number;
 }
 
 export interface Invoice {
@@ -10,5 +9,8 @@ export interface Invoice {
   dateIssued: string;
   billedTo: string;
   addHst: boolean;
+  addQuantity: boolean;
+  hstRate?: number;
+  additionalNotes?: string;
   invoiceItems: InvoiceItem[];
 }
