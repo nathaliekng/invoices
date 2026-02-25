@@ -3,7 +3,8 @@
 import React, { useRef, useState } from 'react';
 import { Invoice } from '@/types/invoice';
 import { useReactToPrint } from 'react-to-print';
-import { InvoiceTemplate } from '../templates/robTemplate';
+import { RobTemplate } from '../templates/robTemplate';
+import { generateInvoicePDF } from '../templates/generateInvoice';
 
 export default function CreatePage() {
   const [invoice, setInvoice] = useState<Invoice>({
@@ -23,11 +24,16 @@ export default function CreatePage() {
 
   const ref = useRef<HTMLDivElement>(null);
 
-  const handlePrint = useReactToPrint({
-    contentRef: ref,
-    documentTitle: `invoice-${invoice.invoiceNumber}`
-  });
-
+  const downloadPDF = async () => {
+    const blob = await generateInvoicePDF(invoice)
+  
+    const url = URL.createObjectURL(blob)
+  
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `invoice-${invoice.invoiceNumber}.pdf`
+    a.click()
+  }
   const updateItemField = (field: string, value: string | number) => {
     const updatedItems = [...invoice.invoiceItems];
     (updatedItems[0] as any)[field] = value;
@@ -44,7 +50,7 @@ export default function CreatePage() {
       <div className="flex justify-center">
         <div className="sticky top-10">
           <div ref={ref}>
-            <InvoiceTemplate invoice={invoice} />
+            <RobTemplate invoice={invoice} />
           </div>
         </div>
       </div>
@@ -120,7 +126,7 @@ export default function CreatePage() {
 
         <button
           type="button"
-          onClick={handlePrint}
+          onClick={downloadPDF}
           className="bg-black text-white p-3 rounded-xl mt-2"
         >
           Download Invoice PDF
