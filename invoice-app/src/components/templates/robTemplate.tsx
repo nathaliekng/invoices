@@ -4,6 +4,7 @@ import { Invoice } from '@/types/invoice';
 import { Page, View, Text, StyleSheet } from '@react-pdf/renderer';
 import { Document } from '@react-pdf/renderer';
 import Image from 'next/image';
+import { Image as PDFImage } from '@react-pdf/renderer';
 
 export function RobTemplate({
   invoice,
@@ -16,98 +17,123 @@ export function RobTemplate({
     (sum, item) => sum + item.rate * (item.quantity || 1),
     0
   );
-  const styles = StyleSheet.create({
-    page: {
-      padding: 40,
-      backgroundColor: '#ffffff'
-    },
-
-    title: {
-      fontSize: 28,
-      fontWeight: 'bold',
-      marginBottom: 24
-    },
-
-    container: {
-      marginBottom: 24
-    },
-
-    text: {
-      fontSize: 12,
-      marginBottom: 6
-    },
-
-    table: {
-      width: '100%',
-      borderStyle: 'solid',
-      borderWidth: 1,
-      borderColor: '#e5e7eb',
-      borderBottomWidth: 0
-    },
-
-    row: {
-      flexDirection: 'row',
-      borderBottomWidth: 1,
-      borderColor: '#e5e7eb',
-      padding: 6
-    },
-
-    headerRow: {
-      flexDirection: 'row',
-      borderBottomWidth: 1,
-      borderColor: '#e5e7eb',
-      backgroundColor: '#f9fafb',
-      padding: 6,
-      fontWeight: 'bold'
-    },
-
-    cell: {
-      flex: 1,
-      fontSize: 11,
-      textAlign: 'left'
-    },
-
-    cellRight: {
-      flex: 1,
-      fontSize: 11,
-      textAlign: 'right'
-    },
-
-    total: {
-      textAlign: 'right',
-      marginTop: 24,
-      fontSize: 16,
-      fontWeight: 'bold'
-    }
-  });
   const RobTemplate = (
     <Document>
-      <Page style={styles.page}>
-        <Text style={styles.title}>Invoice</Text>
+      <Page style={{ backgroundColor: '#ffffff', width: 595, minHeight: 842, padding: 10, fontFamily: 'Helvetica' }}>
 
-        <View style={styles.container}>
-          <Text style={styles.text}>Client: {invoice.billedTo}</Text>
-          <Text style={styles.text}>Date: {invoice.dateIssued}</Text>
-          <Text style={styles.text}>Invoice #: {invoice.invoiceNumber}</Text>
+        {/* Header Banner */}
+        <View style={{
+          backgroundColor: '#2E3FFF',
+          width: 575,
+          height: 174,
+          borderRadius: 12,
+          padding: 10,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+        }}>
+          <View>
+            <Text style={{ color: '#ffffff', fontSize: 16, fontFamily: 'Helvetica-Bold', marginBottom: 8 }}>Invoice</Text>
+            <Text style={{ color: '#ffffff', fontSize: 10, marginBottom: 2 }}>Billed To:</Text>
+            <Text style={{ color: '#ffffff', fontSize: 14, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>{invoice.billedTo}</Text>
+            <Text style={{ color: '#ffffff', fontSize: 10 }}>Address</Text>
+          </View>
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text style={{ color: '#ffffff', fontSize: 10, marginBottom: 1 }}>Invoice No.</Text>
+            <Text style={{ color: '#ffffff', fontSize: 13, fontFamily: 'Helvetica-Bold', marginBottom: 6 }}>#{invoice.invoiceNumber || '0'}</Text>
+            <Text style={{ color: '#ffffff', fontSize: 10, marginBottom: 1 }}>Issued on</Text>
+            <Text style={{ color: '#ffffff', fontSize: 10, marginBottom: 6 }}>{invoice.dateIssued}</Text>
+            <Text style={{ color: '#ffffff', fontSize: 10, marginBottom: 1 }}>GST/HST #</Text>
+            <Text style={{ color: '#ffffff', fontSize: 10 }}>763481421 RT0001</Text>
+          </View>
         </View>
 
-        <View style={styles.table}>
-          <View style={styles.headerRow}>
-            <Text style={styles.cell}>Item</Text>
-            <Text style={styles.cellRight}>Qty</Text>
-            <Text style={styles.cellRight}>Price</Text>
+        {/* Table Section */}
+        <View style={{ width: 535, marginLeft: 20, marginTop: 36, marginBottom: 70 }}>
+
+          {/* Table Header */}
+          <View style={{ flexDirection: 'row', marginBottom: 12 }}>
+            <Text style={{ width: 200, fontSize: 13, fontFamily: 'Helvetica-Bold' }}>Services</Text>
+            {invoice.addQuantity && (
+              <Text style={{ flex: 1, fontSize: 10, color: '#60737D', textAlign: 'right' }}>Amount</Text>
+            )}
+            <Text style={{ flex: 1, fontSize: 10, color: '#60737D', textAlign: 'right' }}>Rate</Text>
+            {invoice.addHst && (
+              <Text style={{ flex: 1, fontSize: 10, color: '#60737D', textAlign: 'right' }}>
+                HST {invoice.hstRate ? invoice.hstRate * 100 : '0'}%
+              </Text>
+            )}
+            <Text style={{ flex: 1, fontSize: 10, color: '#60737D', textAlign: 'right' }}>Total</Text>
           </View>
 
-          {invoice.invoiceItems.map((item) => (
-            <View style={styles.row} key={item.serviceName}>
-              <Text style={styles.cell}>{item.serviceName}</Text>
-              <Text style={styles.cellRight}>{item.quantity}</Text>
-              <Text style={styles.cellRight}>${item.rate}</Text>
+          {/* Table Rows */}
+          {invoice.invoiceItems.map((item, i) => (
+            <View key={item.serviceName + '-' + i} style={{ flexDirection: 'row', marginBottom: 12 }}>
+              <Text style={{ width: 200, fontSize: 11, color: '#121722' }}>{item.serviceName}</Text>
+              {invoice.addQuantity && (
+                <Text style={{ flex: 1, fontSize: 11, color: '#60737D', textAlign: 'right' }}>{item.quantity}</Text>
+              )}
+              <Text style={{ flex: 1, fontSize: 11, color: '#60737D', textAlign: 'right' }}>CA${item.rate}</Text>
+              {invoice.addHst && (
+                <Text style={{ flex: 1, fontSize: 11, color: '#60737D', textAlign: 'right' }}>
+                  CA${item.rate * (item?.quantity || 1) * (invoice.hstRate || 0)}
+                </Text>
+              )}
+              <Text style={{ flex: 1, fontSize: 11, color: '#121722', textAlign: 'right' }}>
+                CA${item.rate * (item?.quantity || 1) * (invoice.addHst && invoice.hstRate ? invoice.hstRate + 1 : 1)}
+              </Text>
             </View>
           ))}
+
+          {/* Totals */}
+          <View style={{ alignItems: 'flex-end', width: '100%' }}>
+            <View style={{ width: 243, paddingTop: 28, paddingBottom: 28 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+                <Text style={{ fontSize: 11, color: '#60737D' }}>Subtotal:</Text>
+                <Text style={{ fontSize: 11, color: '#60737D' }}>CA${total}</Text>
+              </View>
+              {invoice.addHst && (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <Text style={{ fontSize: 11, color: '#60737D' }}>
+                    HST ({invoice.hstRate ? invoice.hstRate * 100 : '0'}%):
+                  </Text>
+                  <Text style={{ fontSize: 11, color: '#60737D' }}>CA${total * (invoice.hstRate || 0)}</Text>
+                </View>
+              )}
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={{ fontSize: 13, color: '#121722', fontFamily: 'Helvetica-Bold' }}>Balance Due:</Text>
+                <Text style={{ fontSize: 13, color: '#121722', fontFamily: 'Helvetica-Bold' }}>
+                  CA${total + total * (invoice.addHst && invoice.hstRate ? invoice.hstRate : 0)}
+                </Text>
+              </View>
+            </View>
+          </View>
         </View>
 
-        <Text style={styles.total}>Total: ${total}</Text>
+        {/* Footer */}
+        <View style={{ width: 535, marginLeft: 30 }}>
+          <PDFImage src="/truoStudio.png" style={{ width: 40, height: 40, marginBottom: 12 }} />
+          <View style={{ flexDirection: 'row' }}>
+            {/* Col 1 - gap-3 = 12px gap to next col */}
+            <View style={{ width: 167, marginRight: 12 }}>
+              <Text style={{ fontSize: 14, color: '#121722', fontFamily: 'Helvetica-Bold', marginBottom: 8 }}>truo.studio</Text>
+              <Text style={{ fontSize: 10, color: '#121722', marginBottom: 2 }}>Robert Pham</Text>
+              <Text style={{ fontSize: 10, color: '#121722', marginBottom: 2 }}>119 Claremont Lane, Woodbridge, Ontario, Canada, L4L 8Z8</Text>
+              <Text style={{ fontSize: 10, color: '#334BC8' }}>robert@truo.studio</Text>
+            </View>
+            {/* Col 2 */}
+            <View style={{ width: 167, marginRight: 12 }}>
+              <Text style={{ fontSize: 10, color: '#121722', fontFamily: 'Helvetica-Bold', marginBottom: 12 }}>Payment Instructions</Text>
+              <Text style={{ fontSize: 10, color: '#60737D' }}>Payment via e-transfer to: truo@wealthsimple.me</Text>
+            </View>
+            {/* Col 3 */}
+            <View style={{ width: 167 }}>
+              <Text style={{ fontSize: 10, color: '#121722', fontFamily: 'Helvetica-Bold', marginBottom: 12 }}>Additional Notes</Text>
+              <Text style={{ fontSize: 10, color: '#60737D' }}>{invoice.additionalNotes}</Text>
+            </View>
+          </View>
+        </View>
+
       </Page>
     </Document>
   );
