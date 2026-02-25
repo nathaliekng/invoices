@@ -1,12 +1,14 @@
 export interface InvoiceItem {
-  name: string;
-  quantity: number;
-  price: number;
+  serviceName: string;
+  quantity?: number;
+  rate: number;
+  hstRate?: number;
 }
 
 export interface Invoice {
-  clientName: string;
-  invoiceDate: string;
   invoiceNumber: string;
-  items: InvoiceItem[];
+  dateIssued: string;
+  billedTo: string;
+  addHst: boolean;
+  invoiceItems: InvoiceItem[];
 }
